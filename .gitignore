@@ -1,0 +1,49 @@
+# Secrets and local configuration — never commit
+config.local.json
+*.local.json
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+wpa_supplicant*.conf
+*.nmconnection
+authorized_keys
+
+# Device state that contains real people
+profiles/
+*.pin
+
+# OS images and large build output
+*.img
+*.img.xz
+*.img.gz
+*.zip
+build/
+dist/
+
+# Diagnostics captured from devices
+diagnostics/
+*.log
+!docs/**/*.log.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node (launcher tooling, if any)
+node_modules/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,27 @@
+{
+  "_comment": "Chess.com destination policy. Merged over common.json. PARENT-GATED — a profile may only use this destination after the parent PIN and the under-13 acknowledgment. See docs/adr/0005 and docs/child-safety.md.",
+
+  "_age_warning": "Chess.com requires users to be 13+. Under-13 use requires a Parental Consent Form filed with Chess.com. Chess.com's chat lockdown ('Safe Mode') must be requested through Chess.com support per account and cannot be enabled from this device. Whether this destination should exist at all before a partner agreement is an open question for the advisor.",
+
+  "_allowlist_status": "UNVERIFIED STARTING POINT. Derive the real list empirically during bring-up per README.md in this directory. Do not ship this as-is.",
+
+  "URLBlocklist": ["*"],
+
+  "URLAllowlist": [
+    "https://www.chess.com",
+    "https://chess.com"
+  ],
+
+  "_candidate_additions": [
+    "Add ONE AT A TIME, only when something genuinely breaks, never as a wildcard:",
+    "asset/CDN origins used by the play page",
+    "the websocket/realtime origin the live board needs",
+    "authentication origin, if sign-in or 2FA redirects off the main host"
+  ],
+
+  "RestoreOnStartup": 4,
+  "RestoreOnStartupURLs": ["https://www.chess.com/play"],
+  "HomepageLocation": "https://www.chess.com/play",
+  "HomepageIsNewTabPage": false,
+  "NewTabPageLocation": "https://www.chess.com/play"
+}

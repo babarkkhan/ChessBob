@@ -1,0 +1,25 @@
+{
+  "_comment": "ChessKid destination policy. Merged over common.json. Default destination for every profile — see docs/adr/0005.",
+
+  "_allowlist_status": "UNVERIFIED STARTING POINT. Derive the real list empirically during bring-up per README.md in this directory. Do not ship this as-is. Record the verified list and its verification date in docs/hardware-bringup.md.",
+
+  "URLBlocklist": ["*"],
+
+  "URLAllowlist": [
+    "https://www.chesskid.com",
+    "https://chesskid.com"
+  ],
+
+  "_candidate_additions": [
+    "Origins the site may require. Add ONE AT A TIME, only when something genuinely breaks, and never as a wildcard:",
+    "asset/CDN origin used by ChessKid",
+    "authentication origin, if sign-in redirects off the main host",
+    "any origin required by the parent's Edit Kid flow"
+  ],
+
+  "RestoreOnStartup": 4,
+  "RestoreOnStartupURLs": ["https://www.chesskid.com/"],
+  "HomepageLocation": "https://www.chesskid.com/",
+  "HomepageIsNewTabPage": false,
+  "NewTabPageLocation": "https://www.chesskid.com/"
+}

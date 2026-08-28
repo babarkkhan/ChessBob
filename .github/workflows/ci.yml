@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fairplay:
+    name: Fair-play invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify no engine, no automation, no page inspection
+        run: bash scripts/verify-fairplay.sh
+
+  shellcheck:
+    name: Shell lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y shellcheck
+          # SC2016: intentional single-quoted regexes throughout.
+          find scripts -name '*.sh' -print0 \
+            | xargs -0 -r shellcheck -e SC2016
+
+  policy:
+    name: Chromium policy is valid JSON
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate managed policy templates
+        run: |
+          shopt -s nullglob
+          found=0
+          for f in packaging/chromium/policies/*.json; do
+            found=1
+            echo "checking $f"
+            python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f"
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "no policy files yet — skipping"
+          fi

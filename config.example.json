@@ -1,0 +1,53 @@
+{
+  "_comment": "Copy to config.local.json and fill in. config.local.json is gitignored and must NEVER be committed — this repository is public. Do not put real children's names here; the display name shown on a profile tile can be a nickname.",
+
+  "device": {
+    "hostname": "chessbob",
+    "timezone": "Europe/London",
+    "locale": "en_GB.UTF-8"
+  },
+
+  "network": {
+    "_comment": "Leave empty. Wi-Fi is configured on the device through the launcher, not from a file in a public repo.",
+    "ssid": "",
+    "psk": ""
+  },
+
+  "parent": {
+    "_comment": "Set on first boot through the launcher. Stored hashed on the device. Never put a real PIN here.",
+    "pin": ""
+  },
+
+  "profiles": [
+    {
+      "display_name": "Player One",
+      "avatar": "knight",
+      "destination": "chesskid",
+      "daily_limit_minutes": 45
+    },
+    {
+      "display_name": "Player Two",
+      "avatar": "rook",
+      "destination": "chesskid",
+      "daily_limit_minutes": 45
+    }
+  ],
+
+  "display": {
+    "width": 1024,
+    "height": 600,
+    "orientation": "landscape",
+    "brightness_percent": 80
+  },
+
+  "audio": {
+    "muted_on_boot": true,
+    "volume_percent": 50
+  },
+
+  "development": {
+    "_comment": "All false for anything that leaves the bench. See docs/threat-model.md.",
+    "ssh_enabled": false,
+    "show_boot_messages": false
+  }
+}

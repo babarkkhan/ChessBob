@@ -1,0 +1,41 @@
+{
+  "_comment": "Shared lockdown merged into every ChessBob Chromium policy. See README.md in this directory and docs/adr/0005. Keys prefixed with _ are documentation only and must be stripped before install.",
+
+  "DeveloperToolsAvailability": 2,
+  "IncognitoModeAvailability": 1,
+  "PasswordManagerEnabled": false,
+  "AutofillAddressEnabled": false,
+  "AutofillCreditCardEnabled": false,
+  "BrowserSignin": 0,
+  "SyncDisabled": true,
+  "MetricsReportingEnabled": false,
+  "SearchSuggestEnabled": false,
+  "PromotionalTabsEnabled": false,
+  "BookmarkBarEnabled": false,
+  "EditBookmarksEnabled": false,
+  "ShowHomeButton": false,
+  "PrintingEnabled": false,
+  "TranslateEnabled": false,
+
+  "ExtensionInstallBlocklist": ["*"],
+  "ExtensionInstallForcelist": [],
+
+  "DownloadRestrictions": 3,
+  "URLBlocklist": ["*"],
+
+  "DefaultGeolocationSetting": 2,
+  "DefaultNotificationsSetting": 2,
+  "DefaultPopupsSetting": 2,
+  "DefaultFileSystemReadGuardSetting": 2,
+  "DefaultFileSystemWriteGuardSetting": 2,
+  "DefaultSerialGuardSetting": 2,
+  "DefaultWebUsbGuardSetting": 2,
+  "DefaultWebBluetoothGuardSetting": 2,
+  "DefaultSensorsSetting": 2,
+
+  "_camera_mic_comment": "Chess sites may offer video/voice features. Denied by default on a children's device; revisit only if a required flow breaks.",
+  "DefaultMediaStreamSetting": 2,
+
+  "_tls_comment": "Never weaken these. TLS verification stays on; there is no interception anywhere in this project.",
+  "RemoteAccessHostFirewallTraversal": false
+}

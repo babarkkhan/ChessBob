@@ -1,0 +1,27 @@
+{
+  "_comment": "Policy for the launcher's own Chromium instance. The launcher renders our local touch UI over loopback and must never be able to reach the internet — if it can, the origin pinning on the session browser is pointless because a child could just use the launcher's browser.",
+
+  "URLBlocklist": ["*"],
+
+  "URLAllowlist": [
+    "http://127.0.0.1",
+    "http://localhost"
+  ],
+
+  "_captive_portal_note": "Captive-portal escape needs a temporary, restricted browser session with a different policy. That is a separate short-lived instance, NOT this one, and it returns to the launcher when the portal completes. Do not widen this allowlist to solve captive portals.",
+
+  "DeveloperToolsAvailability": 2,
+  "IncognitoModeAvailability": 1,
+  "PasswordManagerEnabled": false,
+  "BrowserSignin": 0,
+  "SyncDisabled": true,
+  "MetricsReportingEnabled": false,
+  "ExtensionInstallBlocklist": ["*"],
+  "DownloadRestrictions": 3,
+  "PrintingEnabled": false,
+
+  "DefaultGeolocationSetting": 2,
+  "DefaultNotificationsSetting": 2,
+  "DefaultPopupsSetting": 2,
+  "DefaultMediaStreamSetting": 2
+}
