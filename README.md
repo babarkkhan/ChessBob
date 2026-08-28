@@ -64,6 +64,11 @@ See [`docs/child-safety.md`](docs/child-safety.md).
 Power topology is **not** what the display vendor's wiki says — see
 [ADR 0006](docs/adr/0006-power-topology-pi5.md) before plugging anything in.
 
+## Start here
+
+New to the build? [`docs/getting-started.md`](docs/getting-started.md) is the
+step-by-step from bare parts to a working bench rig, including what to buy.
+
 ## Layout
 
 ```

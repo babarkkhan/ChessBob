@@ -1,52 +1,95 @@
-# Bill of materials — prototype
+# Bill of materials
 
-## Already owned
+Organised by **when you need it**, not by category. Buy tier 1 and 2 now; everything
+below that is deliberately deferred until a measurement or a gate says otherwise.
+
+Step-by-step usage is in [`docs/getting-started.md`](../../docs/getting-started.md).
+
+---
+
+## Tier 0 — Already on the desk
 
 | Part | Notes |
 |---|---|
-| Raspberry Pi 5, 4 GB | BCM2712, quad Cortex-A76 @ 2.4 GHz, LPDDR4X. **The seller listing's `ARMv7`, `DDR4` and `4 GB storage` fields are all wrong** — the Pi has no onboard general storage |
+| Raspberry Pi 5, 4 GB | BCM2712, quad Cortex-A76 @ 2.4 GHz, LPDDR4X. **The seller listing's `ARMv7`, `DDR4` and `4 GB storage` fields are all wrong** — the Pi has no onboard general storage and will not boot without an SD card |
 | 52Pi / GeeekPi EP-0177 7" display | 1024×600 @ 60 Hz IPS, capacitive touch, 500 cd/m², 165 × 100 × 8 mm, ~0.50 kg. Full-size HDMI in, USB-C, 3.5 mm out, 2 speakers. **Confirm the SKU on the physical unit** — marketplace listings conflict with the vendor wiki |
 
-## Required before Phase 0
+### Probably in the display box — check before ordering
 
-| Part | Why | Status |
+The 52Pi packaging for this model is reported to include these. Open the box first
+(Step 1 of the getting-started guide); if they're there, skip the corresponding tier-2
+items.
+
+- Full-size HDMI cable
+- Full-size HDMI → micro-HDMI adapter
+- USB-C cable
+- 2 × speakers, 2 × plastic stands, 2 × M3 screws, 2 × rubber feet
+
+---
+
+## Tier 1 — Must have, nothing works without these
+
+| Part | Why | Ordered |
 |---|---|---|
-| **Official 27 W (5 V/5 A) USB-C supply** | **Required, not preferred.** It is what raises the Pi 5's total USB-A budget from 600 mA to 1.6 A, which is what makes powering the display from the Pi viable at all. See [ADR 0006](../../docs/adr/0006-power-topology-pi5.md) | |
-| **Inline USB power meter** (USB-C PD capable) | Phase 0 cannot be closed without measuring real draw. Cheapest risk reduction on this list — the alternative is days spent diagnosing "software" faults that are brownouts | |
-| Raspberry Pi 5 Active Cooler | Chromium generates sustained load; an enclosure reduces airflow | |
-| High-endurance A2 microSD, 32–64 GB | Boot media | |
-| **Second identical microSD** | Keeps a known-good image. Card corruption otherwise costs a day of re-provisioning | |
-| **Right-angle micro-HDMI → HDMI** adapter or cable | Reduces enclosure depth and connector strain; better than a straight short cable | |
-| Known-good USB **data** cable for touch | Touch needs data, not just power. Charge-only cables are a classic half-day of confusion | |
-| Momentary tactile button + leads | GPIO Home (short) / safe shutdown (long) | |
-| Small USB or Bluetooth keyboard | Development and recovery only. Not shipped | |
+| **Official Raspberry Pi 27 W USB-C PSU (5 V/5 A)** | **Required, not preferred.** It is what raises the Pi 5's total USB-A budget from 600 mA to 1.6 A, which is what makes powering the display from the Pi viable at all. A generic 5 V/3 A brick drops the Pi into low-current mode and produces brownout faults that read as software bugs. See [ADR 0006](../../docs/adr/0006-power-topology-pi5.md) | |
+| **microSD, 32–64 GB, A2, high-endurance** | Boot media. "High endurance" matters for something power-cycled constantly | |
+| **Raspberry Pi 5 Active Cooler** | Chromium is a sustained load; the Pi 5 throttles without it. Cheapest item here and non-optional | |
+| **SD card reader** | To write the card from your PC — built-in or USB adapter. Only if you don't have one | |
+| **USB keyboard + mouse** | Bring-up and recovery only. Not part of the product | |
 
-## Contingency
+---
+
+## Tier 2 — Strongly recommended, buy alongside tier 1
+
+| Part | Why | Ordered |
+|---|---|---|
+| **Inline USB power meter** (USB-C PD capable) | Phase 0's power measurement is a gate and can't be closed without it. `vcgencmd pmic_read_adc` covers the Pi's own rails but not the display's draw. Cheapest risk reduction on this list — the alternative is days spent diagnosing brownouts as software faults | |
+| **Second identical microSD** | Keeps a known-good image. Saves a day the first time a card corrupts, which it will | |
+
+### Only if the display box was empty of cables
+
+| Part | Why | Ordered |
+|---|---|---|
+| Micro-HDMI → full-size HDMI cable, or adapter + HDMI cable | Pi 5 has micro-HDMI; the display takes full-size | |
+| USB-C **data** cable | Touch needs data, not just power. Charge-only cables are a classic half-day of confusion | |
+
+---
+
+## Tier 3 — Deferred until a measurement says otherwise
+
+Don't buy these yet. Each has a specific trigger.
 
 | Part | Trigger |
 |---|---|
-| **5 V/3 A supply for the display** | Buy alongside the above. Needed if measured peak display draw exceeds ~1.2 A, forcing the fallback topology in ADR 0006. Only usable if Phase 0.1 confirms touch data is available without power on the same port |
-| NVMe HAT + drive | **Held in reserve.** Only if Phase 3 boot-time or microSD-reliability measurements demand it. Adds cost, heat, mechanical complexity, and another board and cable |
+| **5 V/3 A supply for the display** | Only if Step 7 measures peak display draw above ~1.2 A, forcing the fallback topology in [ADR 0006](../../docs/adr/0006-power-topology-pi5.md). Also requires that Step 1 found touch data available without power on the same port |
+| **Right-angle micro-HDMI adapter** | Enclosure work. Reduces depth and connector strain versus the boxed adapter-plus-cable, which is bulky and a strain risk once packaged |
+| **Momentary tactile button + leads** | Phase 1, for GPIO Home (short press) / safe shutdown (long press) |
+| **NVMe HAT + drive** | **Held in reserve.** Only if Phase 3 boot-time or microSD-reliability measurements demand it. Adds cost, heat, mechanical complexity, another board and another cable |
 
-## Enclosure (after Phase 0 closes)
+---
 
-Do not design the enclosure until [ADR 0006](../../docs/adr/0006-power-topology-pi5.md)
-is closed — the fallback topology needs a second cable entry.
+## Tier 4 — Enclosure, after Phase 0 closes
 
-Requirements, with the kid/family context in mind:
+**Do not design or buy for the enclosure until [ADR 0006](../../docs/adr/0006-power-topology-pi5.md)
+is closed** — the fallback topology needs a second cable entry, which changes the
+design.
+
+Requirements, with the kid/family context in mind
+([ADR 0004](../../docs/adr/0004-multi-profile-family-device.md)):
 
 - Clear intake and exhaust for the active cooler; the Pi must not sit flat against the
   LCD controller board
 - Strain relief on HDMI and USB
 - Metal fasteners and display boards clear of the Pi's antenna area
 - **microSD not obvious or reachable** — this is a shared children's device
-- Recovery button serviceable on prototype units, hidden on later ones
+- Recovery button serviceable on prototypes, hidden on later units
 - Captive fasteners; nothing a child can unscrew and lose
-- Enough base weight that tapping the board does not tip it; slight backward viewing
+- Enough base weight that tapping the board doesn't tip it; slight backward viewing
   angle
-- Tolerant of being knocked, and of sticky hands
+- Tolerant of knocks and sticky hands
 
 ## Thermal and interaction testing
 
 Test at maximum brightness, with Wi-Fi traffic, audio playing, any charging accessory
-attached, and a warm ambient temperature — not on an open bench at room temperature.
+attached, and a warm ambient temperature — **not** on an open bench at room
+temperature with nothing else running.
