@@ -1,0 +1,32 @@
+{
+  "_comment": "Offline play. The content browser is pinned to the local board served over loopback and can reach nothing else -- not the chess sites, not the wider internet. See docs/adr/0009.",
+
+  "_why_default_deny": "This is one half of a two-way default-deny. The online policies allowlist only their chess origin, so the offline board's URL is blocked during online play; this policy allowlists only loopback, so the chess sites are blocked during offline play. Neither mode can reach the other's pages even if something went wrong with the process slot.",
+
+  "URLBlocklist": ["*"],
+
+  "URLAllowlist": [
+    "http://127.0.0.1"
+  ],
+
+  "RestoreOnStartup": 4,
+  "RestoreOnStartupURLs": ["http://127.0.0.1:8137/offline/"],
+  "HomepageLocation": "http://127.0.0.1:8137/offline/",
+  "HomepageIsNewTabPage": false,
+  "NewTabPageLocation": "http://127.0.0.1:8137/offline/",
+
+  "DeveloperToolsAvailability": 2,
+  "IncognitoModeAvailability": 1,
+  "PasswordManagerEnabled": false,
+  "BrowserSignin": 0,
+  "SyncDisabled": true,
+  "MetricsReportingEnabled": false,
+  "ExtensionInstallBlocklist": ["*"],
+  "DownloadRestrictions": 3,
+  "PrintingEnabled": false,
+
+  "DefaultGeolocationSetting": 2,
+  "DefaultNotificationsSetting": 2,
+  "DefaultPopupsSetting": 2,
+  "DefaultMediaStreamSetting": 2
+}

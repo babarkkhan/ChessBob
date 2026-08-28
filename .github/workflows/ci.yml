@@ -35,6 +35,25 @@ jobs:
           find scripts -name '*.sh' -print0 \
             | xargs -0 -r shellcheck -e SC2016
 
+  engine:
+    name: Offline engine tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install offline deps
+        run: npm --prefix offline ci || npm --prefix offline install
+
+      - name: Run engine tests
+        run: npm --prefix offline test
+
+      - name: Benchmark (informational)
+        run: node offline/bench.mjs
+
   policy:
     name: Chromium policy is valid JSON
     runs-on: ubuntu-latest

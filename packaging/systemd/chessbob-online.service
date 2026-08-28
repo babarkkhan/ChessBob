@@ -1,0 +1,30 @@
+# Content browser, online: the chess site.
+#
+# One content browser exists at a time. This unit and chessbob-offline.service
+# Conflict, so systemd -- not our own care -- guarantees the offline board and its
+# engine cannot be running during an online game. See docs/adr/0009.
+#
+# This is the third of three independent layers. The other two are that both modes
+# share one process slot, and that Chromium managed policy is default-deny in each
+# direction. Any one of them alone would be sufficient; all three is deliberate.
+
+[Unit]
+Description=ChessBob content browser (online)
+After=network-online.target time-sync.target chessbob-supervisor.service
+Wants=network-online.target
+Requires=chessbob-supervisor.service
+Conflicts=chessbob-offline.service
+
+[Service]
+Type=simple
+User=chessbob
+# The supervisor swaps the managed-policy file for the destination BEFORE this starts;
+# Chromium reads policy only at startup. It also refuses to start this unit while any
+# offline browser process still exists.
+ExecStartPre=/usr/local/lib/chessbob/apply-policy online
+ExecStart=/usr/local/lib/chessbob/launch-content-browser online
+Restart=no
+TimeoutStopSec=10
+
+[Install]
+WantedBy=chessbob.target

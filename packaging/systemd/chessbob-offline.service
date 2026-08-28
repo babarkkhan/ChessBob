@@ -1,0 +1,25 @@
+# Content browser, offline: the local board and engine.
+#
+# Conflicts with chessbob-online.service. Starting this stops that, and vice versa.
+# See docs/adr/0008 and docs/adr/0009.
+#
+# Note there is no engine process here to stop -- the engine is JavaScript inside the
+# page. Stopping this unit removes it entirely, which is the point: there is no engine
+# binary on the device for anything to leave running.
+
+[Unit]
+Description=ChessBob content browser (offline play)
+After=chessbob-supervisor.service
+Requires=chessbob-supervisor.service
+Conflicts=chessbob-online.service
+
+[Service]
+Type=simple
+User=chessbob
+ExecStartPre=/usr/local/lib/chessbob/apply-policy offline
+ExecStart=/usr/local/lib/chessbob/launch-content-browser offline
+Restart=no
+TimeoutStopSec=10
+
+[Install]
+WantedBy=chessbob.target

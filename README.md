@@ -86,8 +86,9 @@ Power topology is **not** what the display vendor's wiki says — see
 
 ## Start here
 
-New to the build? [`docs/getting-started.md`](docs/getting-started.md) is the
-step-by-step from bare parts to a working bench rig, including what to buy.
+- [`docs/build-plan.md`](docs/build-plan.md) — what to do next, and what is deliberately not being done yet
+- [`docs/getting-started.md`](docs/getting-started.md) — step-by-step from bare parts to a working bench rig, including what to buy
+- [`offline/README.md`](offline/README.md) — the offline board and engine, runnable on a laptop today
 
 ## Layout
 

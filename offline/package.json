@@ -1,0 +1,14 @@
+{
+  "name": "chessbob-offline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Offline play for ChessBob: local two-player board and a deliberately beatable engine. No engine binary, no UCI. See docs/adr/0009.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0"
+  }
+}
