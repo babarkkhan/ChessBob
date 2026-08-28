@@ -82,7 +82,12 @@ scan "no chess engine named in provisioning or source" "$ENGINES"
 # detection -- which the offline two-player board in ADR 0008 legitimately needs.
 # Rules are not evaluation. What makes a rules library dangerous is its UCI client
 # submodule, which is checked separately below.
-EVAL_LIBS='\b(syzygy|tablebase|nnue|pyffish|polyglot[-_]?book)\b'
+# Matched in DEPENDENCY and USAGE positions only -- an import, a require, a package.json
+# entry, or a weights filename -- not any mention of the word. Source files legitimately
+# say "no NNUE, no tablebases" in a comment declaring their absence, and a check that
+# fires on that trains people to weaken it. The ban is on depending on these, not on
+# naming them.
+EVAL_LIBS='((import|require|from)[^\n]{0,80}(syzygy|tablebase|nnue|pyffish|polyglot)|\.nnue\b|"(syzygy|tablebase|nnue|pyffish|polyglot[-_]?book)"[[:space:]]*:)'
 scan "no evaluation or tablebase dependency" "$EVAL_LIBS"
 
 # The UCI client surface -- how you talk to an engine. This is the dangerous half of

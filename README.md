@@ -1,10 +1,12 @@
 # ChessBob
 
-A dedicated touchscreen chess appliance for families. It boots into a profile picker,
-a kid taps their name, and they land in a signed-in chess session — no desktop, no
-browser chrome, no keyboard, no computer.
+A dedicated touchscreen chess appliance: a Raspberry Pi 5 and a 7" touchscreen that
+boots straight into a chess board. No desktop, no browser chrome, no keyboard, no
+computer. It plays online through the chess site's own web app, and offline against
+a local opponent when there is no network.
 
-**Status: planning / pre-bring-up.** Nothing here runs yet.
+**Status: stage 1, pre-bring-up.** The offline engine works and is tested; everything
+else is waiting on hardware. See [`docs/build-plan.md`](docs/build-plan.md).
 
 ---
 
@@ -30,8 +32,13 @@ everything about the game.
 
 ChessBob does not, and will not:
 
-- run a chess engine, tablebase, or evaluation of any kind — no engine binary is
-  installed on the device at all
+- **install a chess engine binary** — there is none on the device, and CI fails the
+  build if one appears
+- speak **UCI**, or ship any engine-client code
+- use a tablebase, NNUE, or opening book
+- run *any* chess evaluation during online play — the offline opponent is our own
+  JavaScript, it lives inside a page, and browser policy blocks that page from loading
+  while the chess site is open ([ADR 0009](docs/adr/0009-offline-engine-design.md))
 - read, scrape, or inspect the contents of any page
 - inject JavaScript, automate moves, or drive the DOM
 - intercept, proxy, or inspect network traffic
@@ -63,21 +70,28 @@ explicit acknowledgment. See [`docs/child-safety.md`](docs/child-safety.md).
 
 ## Offline play
 
-A browser appliance with no network is a brick, so the device also plays offline —
-**two people on the same screen**, with local move validation, a clock and undo. No
-engine involved, so [ADR 0002](docs/adr/0002-no-engine-on-device.md) holds unchanged.
+A browser appliance with no network is a brick, so the device also plays offline: **two
+people on one screen**, or **against a deliberately beatable opponent**.
 
-Playing *against the computer* would need an engine, which collides directly with that
-ADR. It's deferred behind a hard, machine-enforced mode boundary — the conditions are
-written down in [ADR 0008](docs/adr/0008-offline-mode.md) so the decision gets taken
-deliberately rather than drifted into.
+That opponent is our own JavaScript, running inside the offline board page — **not** an
+engine binary, and not Stockfish. Three independent layers stop it running during an
+online game: online and offline share one content-browser process slot; Chromium
+managed policy is default-deny in both directions, so each mode's allowlist excludes
+the other's URLs; and `Conflicts=` between two systemd units.
+
+Difficulty is a depth cap, a wall-clock budget, and a tolerance in centipawns — not
+depth alone, because a shallow-but-perfect engine feels alien rather than weak. It is
+meant to be beatable by a beginner; if it ever feels strong, that is a product bug.
+
+[`offline/README.md`](offline/README.md) — runnable on a laptop today.
+[ADR 0008](docs/adr/0008-offline-mode.md), [ADR 0009](docs/adr/0009-offline-engine-design.md).
 
 ## Hardware
 
 | | |
 |---|---|
 | Compute | Raspberry Pi 5, 4 GB (BCM2712, Cortex-A76 @ 2.4 GHz) |
-| Display | 52Pi / GeeekPi EP-0177 — 7" IPS, 1024×600 @ 60 Hz, capacitive touch, 500 cd/m² |
+| Display | 7" IPS, 1024×600 @ 60 Hz, board rev `A1-7inch-V13`, RTD2660H scaler — [findings](hardware/display-A1-7inch-V13.md) |
 | OS | Raspberry Pi OS 6.2 (64-bit), labwc / Wayland |
 | Storage | High-endurance A2 microSD (NVMe held in reserve) |
 
@@ -93,9 +107,10 @@ Power topology is **not** what the display vendor's wiki says — see
 ## Layout
 
 ```
-docs/          architecture, ADRs, threat model, child safety, bring-up, test plan
-launcher/      touch UI: profile picker, parent gate, setup, recovery
-supervisor/    state machine, browser + GPIO + profile control
+docs/          architecture, ADRs, threat model, child safety, bring-up, build plan
+offline/       local board + our own engine (no binary, no UCI)
+launcher/      touch UI: home, setup, recovery
+supervisor/    state machine, browser + GPIO control
 packaging/     systemd units, Chromium managed policy, image provisioning
 hardware/      BOM, enclosure, test fixture
 scripts/       developer and verification commands
