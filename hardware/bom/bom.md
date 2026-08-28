@@ -12,7 +12,7 @@ Step-by-step usage is in [`docs/getting-started.md`](../../docs/getting-started.
 | Part | Notes |
 |---|---|
 | Raspberry Pi 5, 4 GB | BCM2712, quad Cortex-A76 @ 2.4 GHz, LPDDR4X. **The seller listing's `ARMv7`, `DDR4` and `4 GB storage` fields are all wrong** — the Pi has no onboard general storage and will not boot without an SD card |
-| 52Pi / GeeekPi EP-0177 7" display | 1024×600 @ 60 Hz IPS, capacitive touch, 500 cd/m², 165 × 100 × 8 mm, ~0.50 kg. Full-size HDMI in, USB-C, 3.5 mm out, 2 speakers. **Confirm the SKU on the physical unit** — marketplace listings conflict with the vendor wiki |
+| 7" IPS display, board rev **`A1-7inch-V13`** | 1024×600 60 Hz, capacitive touch, RTD2660H scaler. Sold as 52Pi/GeeekPi EP-0177 but **the board carries no such marking** — treat vendor specs as indicative and measure instead. Ports: full-size `HDMI-IN`, **one USB-C marked `DC5V POWER & TOUCH`**, physical `VOL` wheel and `BACK-LIGHT ON/OFF`. See [`display-A1-7inch-V13.md`](../display-A1-7inch-V13.md) |
 
 ### Probably in the display box — check before ordering
 
@@ -61,7 +61,7 @@ Don't buy these yet. Each has a specific trigger.
 
 | Part | Trigger |
 |---|---|
-| **5 V/3 A supply for the display** | Only if Step 7 measures peak display draw above ~1.2 A, forcing the fallback topology in [ADR 0006](../../docs/adr/0006-power-topology-pi5.md). Also requires that Step 1 found touch data available without power on the same port |
+| **Powered USB hub** (non-back-feeding) | Only if Step 7 measures peak display draw above the Pi's USB-A budget. **A second 5 V PSU is NOT an option** — the display has one USB-C carrying power and touch together, so the hub carries the current and passes touch through. See [ADR 0006](../../docs/adr/0006-power-topology-pi5.md) |
 | **Right-angle micro-HDMI adapter** | Enclosure work. Reduces depth and connector strain versus the boxed adapter-plus-cable, which is bulky and a strain risk once packaged |
 | **Momentary tactile button + leads** | Phase 1, for GPIO Home (short press) / safe shutdown (long press) |
 | **NVMe HAT + drive** | **Held in reserve.** Only if Phase 3 boot-time or microSD-reliability measurements demand it. Adds cost, heat, mechanical complexity, another board and another cable |
@@ -70,9 +70,16 @@ Don't buy these yet. Each has a specific trigger.
 
 ## Tier 4 — Enclosure, after Phase 0 closes
 
-**Do not design or buy for the enclosure until [ADR 0006](../../docs/adr/0006-power-topology-pi5.md)
-is closed** — the fallback topology needs a second cable entry, which changes the
-design.
+**A back panel is needed earlier than the full enclosure.** The controller PCB is
+fully exposed, with two thin speaker wires on JST connectors a child can catch and
+pull off. Even a rough printed or laser-cut back panel should exist before the device
+is in front of a child. The four corner brass standoffs give clean M3 mounting points
+to build against.
+
+For the **full** enclosure, wait until
+[ADR 0006](../../docs/adr/0006-power-topology-pi5.md) is closed. The forced topology
+needs only one external power entry, which simplifies things — but the powered-hub
+fallback would add a second, which changes the design.
 
 Requirements, with the kid/family context in mind
 ([ADR 0004](../../docs/adr/0004-multi-profile-family-device.md)):

@@ -34,6 +34,7 @@
   ],
 
   "display": {
+    "_brightness_comment": "brightness_percent may be unimplementable. The panel's backlight is a physical control on the controller PCB (BACK-LIGHT ON/OFF) driven by an RTD2660H HDMI scaler, not a DSI backlight the Pi can address. Keep this key only if the ddcutil test in docs/getting-started.md Step 8 proves DDC/CI works; otherwise remove it rather than shipping a slider that does nothing.",
     "width": 1024,
     "height": 600,
     "orientation": "landscape",

@@ -12,28 +12,33 @@ Work through this in order. Steps 1 and 2 you can do today with what's on the de
 
 ---
 
-## Step 1 — Inventory what you already have (15 minutes, do this first)
+## Step 1 — Identify the hardware ✅ mostly done
 
-**Open the display box and list its contents.** The 52Pi packaging for this model is
-reported to include a full-size HDMI cable, a full-size-HDMI-to-micro-HDMI adapter, a
-USB-C cable, two speakers, two plastic stands, two M3 screws, and two rubber feet.
+The controller board has been identified from a photograph — full findings in
+[`hardware/display-A1-7inch-V13.md`](../hardware/display-A1-7inch-V13.md). The
+headline:
 
-If that's what's in your box, **you already have the video and touch cabling for bench
-work**, and the shopping list in Step 2 gets much shorter.
+- Board revision **`A1-7inch-V13`**, Realtek RTD2660H scaler. **No `EP-0177` marking**
+  — it's a generic OEM board that 52Pi rebadges, so vendor specs are indicative only
+- **One USB-C port, silkscreened `DC5V POWER & TOUCH`** — power and touch share it.
+  This forces the power topology (Step 5) and rules out the fallback that
+  [ADR 0006](adr/0006-power-topology-pi5.md) previously assumed
+- Physical `VOL` wheel and `BACK-LIGHT ON/OFF` on the board edge — **brightness may not
+  be software-controllable at all** (tested in Step 8)
+- Four corner brass standoffs — M3 mounting points for an enclosure
+- The PCB back is fully exposed, with fragile speaker wires on JST connectors
+
+**Still to check — five minutes:**
 
 | Check | Why it matters | Yours |
 |---|---|---|
-| SKU printed on the display | Marketplace listings for this panel contradict the vendor wiki. The SKU is the only trustworthy source | |
-| **How many USB-C ports does the display have?** | If touch and power share one port, the fallback power topology may be impossible. Single most important thing to determine | |
-| Separate touch USB and separate power USB? | | |
-| HDMI cable + micro-HDMI adapter present? | If yes, skip buying an HDMI cable for now | |
-| USB-C cable present? | | |
-| Speakers — pre-attached or loose in sockets? | | |
-| OSD / backlight buttons on the panel edge? | Determines whether brightness is software-controllable | |
+| Is the unmarked connector beside the USB-C a 3.5 mm audio jack? | Determines whether there's a line-out path at all | |
+| Is `BACK-LIGHT ON/OFF` a switch or a second potentiometer? | Switch means on/off only; pot means analogue dimming by hand | |
+| What's in the box: HDMI cable, micro-HDMI adapter, USB-C cable? | If present, the Step 2 shopping list gets shorter | |
+| Speakers pre-attached, or loose in the JST sockets? | | |
 
-📷 **Photograph the display's label and its port edge, and the Pi board.** Save them
-into this repo under `hardware/`. They're the record, and the variant can't be
-identified without them.
+📷 **Photograph the outside port edge** and add it to `hardware/` alongside the rear
+PCB shot.
 
 Also confirm the Pi says *Raspberry Pi 5 Model B*. The seller screenshot claimed
 `ARMv7`, `DDR4` and `4 GB storage` — all three wrong for a Pi 5, which is
@@ -122,22 +127,26 @@ the connector isn't seated.
 **Order matters. Don't apply power until every cable is seated.**
 
 ```
-[Official 27 W PSU]     ──────>  [Pi 5 USB-C power port]
-[Pi 5 micro-HDMI 0]     ──────>  [Display HDMI in]
-[Display touch USB]     ──────>  [Pi 5 USB-A port]
-[USB keyboard + mouse]  ──────>  [Pi 5 USB-A ports]
+[Official 27 W PSU]         ──────>  [Pi 5 USB-C power port]
+[Pi 5 micro-HDMI 0]         ──────>  [Display HDMI-IN]
+[Display USB-C POWER&TOUCH] ──────>  [Pi 5 USB-A port]     power + touch, one cable
+[USB keyboard + mouse]      ──────>  [Pi 5 USB-A ports]
 ```
 
-Three things to get right:
+The display has **one** USB-C carrying both power and touch, so there's nothing to
+decide here — that single cable goes to a Pi USB-A port and that's the topology.
+
+Two things to get right:
 
 - **Use HDMI0** — the micro-HDMI port **closest to the USB-C power connector**. HDMI1
   works, but HDMI0 is the primary and avoids a class of confusion later.
 - **Never let the display feed power into the Pi's USB-C** while the 27 W supply is
   attached. The vendor wiki tells you to do exactly this; it's a Pi 4 instruction. Two
   sources contending on one rail is not something to experiment with.
-- If the display has separate touch and power connectors, connect **touch to the Pi**
-  and leave its power connector unplugged for now — the whole point of Step 7 is
-  finding out whether the Pi can carry it.
+
+Because the whole display load now sits on the Pi's USB-A budget, the 27 W supply is
+structurally required — on a lesser supply that budget is 600 mA, not 1.6 A. See
+[ADR 0006](adr/0006-power-topology-pi5.md).
 
 Insert the SD card. Then connect the PSU.
 
@@ -234,8 +243,34 @@ Check, and record in `hardware-bringup.md`:
 - [ ] Touch registers, and coordinates match where you actually touched
 - [ ] **Multitouch** — two fingers produce two slots
 - [ ] Touch still correct **after a reboot** (a classic regression)
-- [ ] Audio plays through the speakers
+- [ ] Audio plays through the speakers (HDMI audio, extracted by the scaler)
 - [ ] Audio does **not** start unexpectedly on boot
+- [ ] ALSA volume/mute from the Pi works, with the physical `VOL` wheel as the ceiling
+
+### Is the backlight software-controllable?
+
+`BACK-LIGHT ON/OFF` is a physical control and this is an HDMI scaler board, not a DSI
+panel — so probably not. Worth one test before accepting it, because some RTD-based
+boards expose DDC/CI:
+
+```bash
+sudo apt install -y ddcutil && sudo ddcutil detect && sudo ddcutil getvcp 10
+```
+
+If `detect` finds the display and `getvcp 10` returns a brightness value, it's
+controllable. If not, **the launcher must not offer a brightness slider** — it would
+be a control that does nothing.
+
+Separately, test whether blanking the video signal makes the scaler drop its backlight,
+since "blank and wake" is the plan's replacement for fast boot:
+
+```bash
+wlr-randr --output HDMI-A-1 --off    # wait a few seconds, watch the panel
+wlr-randr --output HDMI-A-1 --on
+```
+
+Most scalers enter standby on signal loss, but it needs confirming — it's a different
+mechanism from brightness control, and the whole no-reboot UX depends on it.
 
 Then the layout question that decides whether this product works at all. Open Chromium
 fullscreen on ChessKid at native resolution:
