@@ -39,10 +39,12 @@ BOOTING
    └─→ PICKER  ←───────────────┴──── (recovered)
          ├─→ PARENT_GATE ─→ SETTINGS ─→ PICKER
          ├─→ SIGNIN(profile)  ─→ SESSION(profile)
+         ├─→ OFFLINE_PLAY      (local two-player board — no network needed)
+         │      └─→ PICKER
          └─→ SESSION(profile)
                 ├─→ PICKER            (Home button — browser stays alive)
                 ├─→ LIMIT_REACHED     (play-time limit) ─→ PICKER
-                ├─→ RECOVERY_OFFLINE  ─→ SESSION | PICKER
+                ├─→ RECOVERY_OFFLINE  ─→ SESSION | PICKER | OFFLINE_PLAY
                 └─→ RECOVERY_STUCK    (user-confirmed restart) ─→ SESSION
 SHUTDOWN  ← long-press power, always confirmed when a session is focused
 UPDATE    ← app-layer bundle, symlink swap, rollback on failed health check
@@ -144,6 +146,27 @@ screenshots.
 
 Logs are a size-limited ring. Diagnostics export is an explicit parent action and is
 redacted.
+
+## Offline play
+
+`OFFLINE_PLAY` is a local two-player board rendered by the launcher — legal move
+generation, check/checkmate detection, clock, undo, new game. No network, no browser
+session, **no engine** ([ADR 0008](adr/0008-offline-mode.md)).
+
+It is reachable from the picker at any time, and it is the correct destination from
+`RECOVERY_OFFLINE` — when the network is down, offering a game beats apologising.
+
+Two constraints on it:
+
+- **Rules, not evaluation.** A rules library for move legality is fine and necessary;
+  anything that evaluates positions or talks UCI is not. `verify-fairplay.sh` enforces
+  that distinction.
+- **Our own assets, clearly licensed.** The board and pieces must not be any
+  platform's. Record the licence when the assets are added, not later.
+
+Playing against the computer is deferred. If it is ever built, the mode boundary is
+`Conflicts=` between two systemd targets plus a supervisor precondition that refuses
+to go online while any engine process exists — not a Python `if`.
 
 ## Deliberately excluded from v1
 

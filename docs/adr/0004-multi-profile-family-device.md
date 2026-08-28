@@ -3,6 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-08-28
 - **Supersedes:** the "one owner per device" assumption in the original planning document
+- **Staged:** deferred to stage 2 by [ADR 0007](0007-build-stages.md). The bench prototype is single-profile with no parent gate; this ADR describes the family device.
 
 ## Context
 

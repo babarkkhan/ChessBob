@@ -77,9 +77,19 @@ echo "ADR 0002 — no engine on device"
 ENGINES='\b(stockfish|fairy-stockfish|lc0|leela[-_ ]?chess|gnuchess|gnu[-_ ]chess|crafty|komodo|dragon-?engine|texel|cfish|berserk-?chess)\b'
 scan "no chess engine named in provisioning or source" "$ENGINES"
 
-# Engine-adjacent libraries: these exist to talk UCI or compute evaluations.
-ENGINE_LIBS='\b(python-chess|chess\.js|uci[-_]?protocol|pyffish|syzygy|tablebase|nnue)\b'
-scan "no engine/tablebase library dependency" "$ENGINE_LIBS"
+# Evaluation and tablebase data. Note what is NOT here: python-chess and chess.js are
+# permitted. They are RULES libraries -- legal move generation, check and checkmate
+# detection -- which the offline two-player board in ADR 0008 legitimately needs.
+# Rules are not evaluation. What makes a rules library dangerous is its UCI client
+# submodule, which is checked separately below.
+EVAL_LIBS='\b(syzygy|tablebase|nnue|pyffish|polyglot[-_]?book)\b'
+scan "no evaluation or tablebase dependency" "$EVAL_LIBS"
+
+# The UCI client surface -- how you talk to an engine. This is the dangerous half of
+# an otherwise fine rules library, and it stays banned even once ADR 0008's offline
+# engine mode exists, outside the designated engine directory.
+UCI_CLIENT='(chess\.engine|SimpleEngine|popen_uci|popen_xboard|UciProtocol|XBoardProtocol|\buci_?(cmd|command|handler)\b)'
+scan "no UCI engine-client surface" "$UCI_CLIENT"
 
 echo
 

@@ -1,6 +1,6 @@
 # ADR 0002 — No chess engine on the device, at all
 
-- **Status:** Accepted
+- **Status:** Accepted. Amended by [ADR 0008](0008-offline-mode.md) — offline two-player needs no engine and leaves this unchanged; offline *engine* play is deferred behind the conditions this ADR sets out, made concrete there.
 - **Date:** 2026-08-28
 
 ## Context

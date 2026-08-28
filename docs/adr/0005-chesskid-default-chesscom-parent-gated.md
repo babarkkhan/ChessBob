@@ -2,6 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-08-28
+- **Staged:** deferred to stage 2 by [ADR 0007](0007-build-stages.md). The bench prototype has one adult user and one destination set in config; this ADR describes the family device.
 
 ## Context
 

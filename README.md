@@ -43,14 +43,34 @@ These are enforced mechanically, not just promised — see
 every push. See [ADR 0002](docs/adr/0002-no-engine-on-device.md) and
 [ADR 0003](docs/adr/0003-supervisor-never-inspects-page-content.md).
 
-## Who it's for
+## Build stages
 
-A household with 2–4 children sharing one device. Because of this, **ChessKid.com is
-the default destination for every profile.** Chess.com requires users to be 13 or
-older; a Chess.com profile can only be created behind the parent gate, after an
-explicit acknowledgment of that requirement.
+Three devices, not one — see [ADR 0007](docs/adr/0007-build-stages.md).
 
-See [`docs/child-safety.md`](docs/child-safety.md).
+| Stage | User | What it is |
+|---|---|---|
+| **1 — bench prototype** ← *current* | One adult, on a desk | Single profile, one destination in config, no parent gate. Get it booting into a board |
+| 2 — family device | 2–4 children under 13 | Profile picker, parent PIN, ChessKid default, play limits, proper enclosure |
+| 3 — commercial | — | Regulatory, licence hygiene, contract manufacture |
+
+Stage 1 is deliberately simpler than stage 2. **The fair-play and page-inspection
+boundaries are not staged** — they're cheap to hold from the start and expensive to
+retrofit.
+
+For the family device, **ChessKid.com is the default destination**: Chess.com requires
+users to be 13 or older, so a Chess.com profile sits behind the parent gate and an
+explicit acknowledgment. See [`docs/child-safety.md`](docs/child-safety.md).
+
+## Offline play
+
+A browser appliance with no network is a brick, so the device also plays offline —
+**two people on the same screen**, with local move validation, a clock and undo. No
+engine involved, so [ADR 0002](docs/adr/0002-no-engine-on-device.md) holds unchanged.
+
+Playing *against the computer* would need an engine, which collides directly with that
+ADR. It's deferred behind a hard, machine-enforced mode boundary — the conditions are
+written down in [ADR 0008](docs/adr/0008-offline-mode.md) so the decision gets taken
+deliberately rather than drifted into.
 
 ## Hardware
 
