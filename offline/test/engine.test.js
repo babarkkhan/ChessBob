@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Chess } from 'chess.js';
+import { Chess } from '../vendor/chess.js';
 
 import { chooseMove, makeRng, LEVELS } from '../engine/index.js';
 import { searchRoot } from '../engine/search.js';

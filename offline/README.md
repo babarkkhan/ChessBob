@@ -7,10 +7,15 @@ and the fair-play collision) and [ADR 0009](../docs/adr/0009-offline-engine-desi
 (why our own engine in the content browser rather than Stockfish in a process).
 
 ```bash
-npm --prefix offline install
-npm --prefix offline test
-node offline/bench.mjs
+npm --prefix offline install    # dev only -- the device needs no npm
+npm --prefix offline test       # 19 tests
+node offline/serve.mjs          # then open http://127.0.0.1:8137/offline/
+node offline/bench.mjs          # response times -- run this on the Pi
 ```
+
+The board is playable in a browser today: tap a piece, tap a destination, pick a
+difficulty, or switch to two-player. Verified end to end — opening moves, engine
+replies, check and checkmate detection, promotion picker, take-back.
 
 ## What this is not
 
@@ -36,11 +41,43 @@ It cannot run during an online game, for three independent reasons:
 | `engine/search.js` | Negamax, alpha-beta, time-budgeted iterative deepening |
 | `engine/levels.js` | Difficulty: depth cap + wall-clock budget + tolerance |
 | `engine/index.js` | Public API — `chooseMove(fen, {level, rng})` |
+| `ui/index.html` | The board page, laid out for 1024×600 |
+| `ui/app.js` | Rendering, tap-to-move, game flow |
+| `ui/pieces.js` | Piece artwork, drawn for this project |
+| `ui/engine-worker.js` | Runs the engine off the main thread |
+| `ui/pieces-preview.html` | Dev page for judging the pieces at size |
+| `serve.mjs` | Loopback static server, used in dev and on the device |
+| `vendor/` | chess.js, vendored — see below |
 | `bench.mjs` | Response-time benchmark. **Run this on the Pi** |
 | `test/` | `node --test`, deterministic via injected RNG |
 
 Rules (legal moves, check, draws) come from `chess.js` (BSD-2-Clause). Rules are not
 evaluation — that distinction is the whole of the CI check's precision.
+
+## Why chess.js is vendored
+
+**Import maps do not apply to Web Workers.** A bare `import { Chess } from 'chess.js'`
+resolves fine in Node and on the main thread, then fails inside the engine worker —
+the board simply sits on "Thinking…" forever, with the failure invisible to any Node
+test.
+
+So the ESM build is vendored to `vendor/chess.js` and imported by relative path
+everywhere, which resolves identically in Node, the main thread and the worker, with
+no import map and no bundler. It also means **the device needs no npm at all**, which
+makes provisioning reproducible.
+
+`test/imports.test.js` guards against the bare specifier creeping back. Refresh the
+vendored copy with `npm --prefix offline run vendor` after bumping the devDependency.
+
+## Interaction
+
+Tap-to-select then tap-to-destination — **deliberately not drag**. Dragging from a
+board edge competes with the compositor's edge gestures, which is an explicit
+acceptance criterion in `docs/test-plan.md`. Legal destinations show as dots, captures
+as rings.
+
+The engine runs in a Web Worker so a two-second search never freezes the board; a
+frozen UI on a touchscreen reads as a broken device.
 
 ## How difficulty works
 
@@ -114,9 +151,13 @@ This engine is *meant* to be beatable. If it ever feels strong, that is a produc
 
 ## Assets
 
-The board and pieces must not be any platform's — no Chess.com or ChessKid palettes,
-piece artwork or sounds. Prefer a **CC0 or BSD** set over CC-BY-SA; share-alike on
-artwork is an avoidable complication for a commercial build
-([ADR 0007](../docs/adr/0007-build-stages.md)).
+The pieces in `ui/pieces.js` were **drawn for this project**, so the repository carries
+no third-party asset licence at all — no attribution requirement, no share-alike,
+nothing to resolve before a commercial build
+([ADR 0007](../docs/adr/0007-build-stages.md)). They are MIT with the rest of the repo.
 
-**Record the licence in this directory at the time assets are added, not later.**
+They are geometric rather than Staunton: a flat set reads more clearly at the ~65px
+squares this board uses on a 1024×600 panel, and it is honest about being its own thing
+rather than an imitation of anyone's. `ui/pieces-preview.html` shows them at size.
+
+No Chess.com or ChessKid palettes, piece artwork or sounds are used anywhere.

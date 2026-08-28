@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ChessBob — Offline</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="board" role="grid" aria-label="Chess board"></div>
+
+  <div id="panel">
+    <div class="card">
+      <div id="status">White to play</div>
+      <div id="substatus"></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Opponent</div>
+      <div class="row">
+        <button id="mode-engine" aria-pressed="true">Computer</button>
+        <button id="mode-two" aria-pressed="false">Two players</button>
+      </div>
+      <div id="level-row" style="margin-top:12px">
+        <div class="label">Difficulty</div>
+        <div class="levels">
+          <button data-level="1">1</button>
+          <button data-level="2">2</button>
+          <button data-level="3">3</button>
+          <button data-level="4">4</button>
+          <button data-level="5">5</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="flex:1 1 auto; display:flex; flex-direction:column; min-height:0">
+      <div class="label">Moves</div>
+      <div id="moves"></div>
+    </div>
+
+    <div class="row">
+      <button id="undo">Take back</button>
+      <button id="new-game">New game</button>
+    </div>
+  </div>
+</div>
+
+<div id="promo" data-open="false">
+  <div class="card">
+    <div class="label">Promote to</div>
+    <div class="choices" id="promo-choices"></div>
+  </div>
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

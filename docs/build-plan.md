@@ -15,7 +15,8 @@ procedures live in [`test-plan.md`](test-plan.md).
 |---|---|
 | Repo, ADRs, fair-play CI | ✅ done |
 | Display board identified, power topology settled | ✅ done — [ADR 0006](adr/0006-power-topology-pi5.md) |
-| Offline engine + tests | ✅ done — 17 tests, [`offline/`](../offline/README.md) |
+| Offline engine + tests | ✅ done — 19 tests, [`offline/`](../offline/README.md) |
+| Offline board UI | ✅ done — playable in a browser, verified end to end |
 | Parts ordered | ⬜ blocked on you |
 | Phase 0 bring-up | ⬜ blocked on parts |
 | Everything else | ⬜ blocked on Phase 0 |
@@ -50,19 +51,20 @@ tuned against a wall-clock budget and have only been measured on a desktop.
 
 Ordered by value, and by how little each depends on hardware decisions.
 
-### B1. Offline board UI ✅ engine done, UI next
+### B1. Offline board UI ✅ done
 
-The engine works and is tested. What it needs is a board to live in:
+Playable now: `node offline/serve.mjs`, then http://127.0.0.1:8137/offline/
 
-- Board rendering at 1024×600, square, ≥480 px, touch-friendly
-- Tap-to-select, tap-to-move. **Not** drag — drag competes with edge gestures on a
-  touchscreen
-- Legal-move highlighting, check indication, promotion picker
-- Two modes: **two-player on one screen**, and **vs computer** with a level picker
-- Game-over states, new game, undo
-- Assets: a CC0 or BSD piece set, **licence recorded when added**
+Board at 1024×600, tap-to-select then tap-to-destination (not drag), legal-move dots
+and capture rings, check and checkmate, promotion picker, take-back, two-player and
+vs-computer with a level picker. Pieces drawn for this project, so no third-party asset
+licence.
 
-Fully testable on a laptop in a browser. This is the best use of time until parts land.
+Verified end to end in a browser, not just unit-tested.
+
+**Still open:** a clock (not yet built), and the board has only been seen at 1024×600 in
+a desktop browser — it needs checking on the actual panel, where touch accuracy and
+viewing angle may change the sizing.
 
 ### B2. Local device API + supervisor skeleton
 

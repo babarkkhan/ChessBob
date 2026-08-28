@@ -6,9 +6,10 @@
   "description": "Offline play for ChessBob: local two-player board and a deliberately beatable engine. No engine binary, no UCI. See docs/adr/0009.",
   "license": "MIT",
   "scripts": {
-    "test": "node --test \"test/**/*.test.js\""
+    "test": "node --test \"test/**/*.test.js\"",
+    "vendor": "node scripts/vendor-chess.mjs"
   },
-  "dependencies": {
+  "devDependencies": {
     "chess.js": "^1.4.0"
   }
 }

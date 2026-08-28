@@ -12,7 +12,7 @@
  * pointlessly weak.
  */
 
-import { Chess } from 'chess.js';
+import { Chess } from './vendor/chess.js';
 import { chooseMove, LEVELS, makeRng } from './engine/index.js';
 
 const POSITIONS = {

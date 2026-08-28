@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>ChessBob — piece preview</title>
+<link rel="stylesheet" href="./style.css">
+<style>
+  body { display:grid; place-items:center; height:100%; }
+  .strip { display:flex; gap:10px; padding:14px; border-radius:12px; }
+  .strip.light { background: var(--light-square); }
+  .strip.dark  { background: var(--dark-square); }
+  .cell { width:110px; height:110px; display:grid; place-items:center; }
+  .small .cell { width:65px; height:65px; }
+  .cap { color: var(--ink-dim); font-size:13px; text-transform:uppercase; letter-spacing:.06em; margin:14px 0 4px; }
+</style></head><body>
+<div>
+  <div class="cap">Large — design check</div>
+  <div style="display:flex; gap:14px">
+    <div class="strip light" id="wl"></div><div class="strip dark" id="bd"></div>
+  </div>
+  <div class="cap">Actual board size (65px squares)</div>
+  <div style="display:flex; gap:14px">
+    <div class="strip light small" id="wls"></div><div class="strip dark small" id="bds"></div>
+  </div>
+</div>
+<script type="module">
+  import { pieceSvg } from './pieces.js';
+  const order = ['k','q','r','b','n','p'];
+  const fill = (id, colour) => document.getElementById(id).innerHTML =
+    order.map(t => `<div class="cell">${pieceSvg(t, colour)}</div>`).join('');
+  fill('wl','w'); fill('bd','b'); fill('wls','w'); fill('bds','b');
+</script></body></html>

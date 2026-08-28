@@ -10,7 +10,7 @@
  *   const { move } = chooseMove(fen, { level: 2 });
  */
 
-import { Chess } from 'chess.js';
+import { Chess } from '../vendor/chess.js';
 import { searchRoot } from './search.js';
 import { chooseFromRanked, resolveLevel, makeRng, LEVELS, DEFAULT_LEVEL } from './levels.js';
 

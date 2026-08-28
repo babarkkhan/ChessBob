@@ -1,0 +1,238 @@
+/*
+ * Offline board, laid out for the device's 1024x600 panel.
+ *
+ * Constraints that drove this:
+ *  - 1024x600 is short. The board gets the height, everything else fits beside it.
+ *  - Touch only. No hover state carries meaning; every control is >= 48px.
+ *  - No platform's colours. This palette is ours -- see the README's trademark notice.
+ */
+
+:root {
+  --bg: #1a1c20;
+  --panel: #24272d;
+  --panel-edge: #33373f;
+  --ink: #eceff4;
+  --ink-dim: #9aa2b1;
+  --accent: #6ea8fe;
+  --accent-ink: #0b1220;
+
+  --light-square: #d8cfc0;
+  --dark-square: #7d8796;
+  --selected: #f2c14e;
+  --lastmove: rgba(242, 193, 78, 0.32);
+  --check: #e05252;
+
+  --piece-white: #f6f3ec;
+  --piece-black: #23262b;
+  --piece-edge: #14161a;
+
+  --board-size: min(560px, calc(100vh - 40px));
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;               /* an appliance never scrolls */
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;     /* no double-tap zoom stealing taps */
+}
+
+#app {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+}
+
+/* ---------- board ---------- */
+
+#board {
+  width: var(--board-size);
+  height: var(--board-size);
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  flex: 0 0 auto;
+}
+
+.sq {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.sq--light { background: var(--light-square); }
+.sq--dark  { background: var(--dark-square); }
+
+.sq--last::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--lastmove);
+  pointer-events: none;
+}
+
+.sq--selected {
+  box-shadow: inset 0 0 0 4px var(--selected);
+}
+
+.sq--check {
+  background: radial-gradient(circle, var(--check) 0%, transparent 72%);
+}
+
+/* Legal destination markers. A dot for a quiet move, a ring for a capture, which is
+   the convention players already know and needs no explaining. */
+.sq--move::before,
+.sq--capture::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.sq--move::before {
+  width: 26%;
+  height: 26%;
+  border-radius: 50%;
+  background: rgba(20, 22, 26, 0.38);
+}
+.sq--capture::before {
+  inset: 6%;
+  border-radius: 50%;
+  border: 6px solid rgba(20, 22, 26, 0.34);
+}
+
+.coord {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.55;
+  color: #14161a;
+  pointer-events: none;
+}
+.coord--file { right: 4px; bottom: 2px; }
+.coord--rank { left: 4px; top: 2px; }
+
+.piece {
+  width: 86%;
+  height: 86%;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.28));
+}
+.piece g {
+  stroke: var(--piece-edge);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+.piece--w g { fill: var(--piece-white); }
+.piece--b g { fill: var(--piece-black); }
+.piece .cut,
+.piece .cross { fill: var(--piece-edge); stroke: none; }
+.piece--b .cut,
+.piece--b .cross { fill: var(--piece-white); }
+
+/* ---------- side panel ---------- */
+
+#panel {
+  flex: 1 1 auto;
+  max-width: 400px;
+  min-width: 300px;
+  height: var(--board-size);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+#status {
+  font-size: 22px;
+  font-weight: 650;
+  min-height: 30px;
+}
+#substatus {
+  color: var(--ink-dim);
+  font-size: 15px;
+  min-height: 21px;
+  margin-top: 4px;
+}
+
+.label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+}
+
+.row { display: flex; gap: 8px; }
+.row > * { flex: 1; }
+
+button {
+  min-height: 52px;                /* touch target floor */
+  padding: 10px 14px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  background: #2f333b;
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+  cursor: pointer;
+}
+button:active { transform: translateY(1px); }
+button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+button:disabled { opacity: 0.4; cursor: default; }
+
+.levels { display: flex; gap: 6px; }
+.levels button { flex: 1 1 0; min-width: 0; padding: 10px 0; }
+
+#moves {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-dim);
+}
+#moves b { color: var(--ink); font-weight: 600; }
+
+/* ---------- promotion overlay ---------- */
+
+#promo {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 12, 15, 0.72);
+}
+#promo[data-open="true"] { display: flex; }
+#promo .card { text-align: center; }
+#promo .choices { display: flex; gap: 10px; margin-top: 10px; }
+#promo button { width: 92px; height: 92px; display: grid; place-items: center; }
+#promo .piece { width: 62px; height: 62px; }
+
+@media (prefers-reduced-motion: reduce) {
+  button:active { transform: none; }
+}
