@@ -26,7 +26,12 @@
   --piece-black: #23262b;
   --piece-edge: #14161a;
 
-  --board-size: min(560px, calc(100vh - 40px));
+  /* The board is height-constrained on a 1024x600 panel, so every pixel of vertical
+     padding costs board size directly. Measured on the real display: 20px padding gave
+     70px squares, which read as slightly too small under a finger. 8px gives ~73px.
+     The width term reserves room for the panel and only binds on wider screens. */
+  --board-pad: 8px;
+  --board-size: min(calc(100vh - (var(--board-pad) * 2)), calc(100vw - 352px));
   --radius: 12px;
 }
 
@@ -47,11 +52,11 @@ html, body {
 
 #app {
   display: flex;
-  gap: 20px;
+  gap: 12px;
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 20px;
+  padding: var(--board-pad);
 }
 
 /* ---------- board ---------- */
@@ -126,8 +131,8 @@ html, body {
 .coord--rank { left: 4px; top: 2px; }
 
 .piece {
-  width: 86%;
-  height: 86%;
+  width: 90%;
+  height: 90%;
   pointer-events: none;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.28));
 }
@@ -147,8 +152,8 @@ html, body {
 
 #panel {
   flex: 1 1 auto;
-  max-width: 400px;
-  min-width: 300px;
+  max-width: 420px;
+  min-width: 280px;
   height: var(--board-size);
   display: flex;
   flex-direction: column;
@@ -184,6 +189,10 @@ html, body {
 
 .row { display: flex; gap: 8px; }
 .row > * { flex: 1; }
+
+/* Narrow, icon-only. The appliance will run Chromium in kiosk mode where this is
+   redundant, but it costs nothing and makes the board usable in a normal window. */
+#fullscreen { flex: 0 0 60px; font-size: 20px; padding: 0; }
 
 button {
   min-height: 52px;                /* touch target floor */

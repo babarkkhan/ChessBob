@@ -27,6 +27,7 @@ const els = {
   levelRow: document.getElementById('level-row'),
   promo: document.getElementById('promo'),
   promoChoices: document.getElementById('promo-choices'),
+  fullscreen: document.getElementById('fullscreen'),
 };
 
 const game = new Chess();
@@ -292,6 +293,19 @@ els.undo.addEventListener('click', () => {
   state.lastMove = history.length ? { from: history.at(-1).from, to: history.at(-1).to } : null;
   clearSelection();
   render();
+});
+
+// The Fullscreen API needs a user gesture, so this has to be a button rather than
+// something done on load. On the finished appliance Chromium runs in kiosk mode and
+// this is redundant -- it exists so the board is usable in a plain window too.
+els.fullscreen.addEventListener('click', async () => {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
+  } catch {
+    // Some kiosk configurations refuse the request. Nothing useful to do, and an
+    // error here must never break the game.
+  }
 });
 
 els.modeTwo.addEventListener('click', () => {
