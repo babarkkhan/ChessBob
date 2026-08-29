@@ -54,7 +54,10 @@ instruction is wrong for a Pi 5 — do not power the Pi from the screen.**
 
 Requires an inline USB power meter. Phase 0 cannot be closed without one.
 
-**Measured 2026-08-29 — the primary topology FAILED.**
+**Measured 2026-08-29 — INVALID.** Taken on an old microUSB Pi supply via a passive
+adapter, not the official 27 W PSU. Retained as a record of the failure mode only; see
+[ADR 0006](adr/0006-power-topology-pi5.md) for why these numbers say nothing about the
+display, and for the retest procedure.
 
 | Condition | Bus voltage | Current | Outcome |
 |---|---|---|---|
@@ -63,12 +66,11 @@ Requires an inline USB power meter. Phase 0 cannot be closed without one.
 | Backlight 75% | 4.8 V | **1.4–1.6 A** | holding, visible droop |
 | Backlight 95% | — | — | **system restart** |
 
-The Pi 5's total USB-A budget is 1.6 A. The display alone consumes it by 75%
-brightness and collapses the rail at 95%. The vendor's "0.5 A max" is a standby figure
-and understates real draw by roughly 3×.
+On a supply the Pi cannot negotiate 5 A from, the USB-A budget is 600 mA rather than
+1.6 A, and the ~15 W total demand at 95% brightness exceeded the 12.5 W supply outright.
+The sag from 5.06 V to 4.8 V is substantially the adapter and cable.
 
-**A non-back-feeding powered USB hub is now required** — see
-[ADR 0006](adr/0006-power-topology-pi5.md). Re-measure all four points once fitted.
+**Retest on the official 27 W PSU before concluding anything.**
 
 **Do not run the soak until the hub is fitted.** A soak at 50% brightness proves
 nothing about the shipping configuration.

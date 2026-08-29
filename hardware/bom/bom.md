@@ -36,7 +36,6 @@ items.
 | **Raspberry Pi 5 Active Cooler** | Chromium is a sustained load; the Pi 5 throttles without it. Cheapest item here and non-optional | |
 | **SD card reader** | To write the card from your PC — built-in or USB adapter. Only if you don't have one | |
 | **USB keyboard + mouse** | Bring-up and recovery only. Not part of the product | |
-| **Powered USB hub, non-back-feeding, 5 V/3 A+** | **Required, measured 2026-08-29.** The panel draws 1.3 A at 50% brightness and restarts the Pi at 95% — it consumes the Pi's entire 1.6 A USB-A budget. Must not back-feed the Pi. USB 2.0 is fine; touch is low-bandwidth HID. See [ADR 0006](../../docs/adr/0006-power-topology-pi5.md) | |
 
 ---
 
@@ -64,6 +63,7 @@ Don't buy these yet. Each has a specific trigger.
 |---|---|
 | **Right-angle micro-HDMI adapter** | Enclosure work. Reduces depth and connector strain versus the boxed adapter-plus-cable, which is bulky and a strain risk once packaged |
 | **Momentary tactile button + leads** | Phase 1, for GPIO Home (short press) / safe shutdown (long press) |
+| **Powered USB hub** — self-powered, DC barrel jack, non-back-feeding | Only if a retest **on the official 27 W PSU** shows the display exceeding the Pi's 1.6 A USB-A budget. The 2026-08-29 reading that appeared to show this was taken on an under-rated microUSB supply and is invalid. **Not** a laptop-style USB-C hub with PD passthrough — those push power up the cable to charge a host, which is the back-feeding we must avoid |
 | **NVMe HAT + drive** | **Held in reserve.** Only if Phase 3 boot-time or microSD-reliability measurements demand it. Adds cost, heat, mechanical complexity, another board and another cable |
 
 ---
