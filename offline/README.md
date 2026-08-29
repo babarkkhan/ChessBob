@@ -13,9 +13,23 @@ node offline/serve.mjs          # then open http://127.0.0.1:8137/offline/
 node offline/bench.mjs          # response times -- run this on the Pi
 ```
 
-The board is playable in a browser today: tap a piece, tap a destination, pick a
-difficulty, or switch to two-player. Verified end to end — opening moves, engine
-replies, check and checkmate detection, promotion picker, take-back.
+## Two screens
+
+**Setup** is the only place the game options live: opponent, difficulty, which side you
+play, and layout. **Game** shows what a player actually needs mid-game — whose turn it
+is, the notation, and the ways out. Once a game starts the setup controls are gone.
+
+| Setup | Game |
+|---|---|
+| Computer / Two players | Turn indicator, check, result |
+| Difficulty 1–5 with rough Elo bands | Move list in algebraic notation |
+| Play as White / Black / Random | Take back, Draw, Resign, Exit |
+| Landscape / Portrait | Layout toggle (⟲), switchable mid-game |
+
+Playing as Black flips the board, because a player expects their own men nearest them.
+
+Verified end to end in a browser at 1024×600: engine opening as White, a real touch
+move in portrait, check and checkmate, promotion, take-back, and the confirm dialog.
 
 ## What this is not
 
@@ -79,6 +93,26 @@ as rings.
 The engine runs in a Web Worker so a two-second search never freezes the board; a
 frozen UI on a touchscreen reads as a broken device.
 
+**Draw offers mean something.** In two-player mode a draw is simple agreement. Against
+the engine the offer is put to it: it runs a shallow search and accepts only if it
+judges itself more than ~1.5 pawns worse off. A Draw button that always worked would be
+a lie.
+
+## Portrait
+
+Portrait rotates the **whole UI 90° inside the same 1024×600 viewport**, so you turn the
+physical screen. That needs no compositor change, no root, and can be toggled mid-game —
+none of which a `wlr-randr` display rotation could manage.
+
+Touch hit-testing through the CSS transform was the obvious thing to get wrong, so it is
+verified rather than assumed: `elementFromPoint` at the visual centre of a8, h1, e4 and
+d5 resolves to those squares, and a real tap-to-move in portrait was played end to end.
+
+Board size is **identical in both layouts** — 584 px, 73 px squares. The panel's short
+edge is 600 px whichever way you turn it, so portrait is an ergonomics choice, not a way
+to get a bigger board. 600 px is the hard ceiling; with zero padding the maximum square
+is 75 px.
+
 ## How difficulty works
 
 Depth alone makes a bad beginner opponent: a depth-1 engine plays perfectly-calculated
@@ -95,13 +129,19 @@ Two rules override tolerance at every level, both for the player's benefit: a **
 mate is always played** (so games end), and a **single legal move is played** without
 consulting the RNG.
 
-| Level | Name | Depth cap | Budget | Tolerance |
-|---|---|---|---|---|
-| 1 | Beginner | 1 | 200 ms | 250 cp |
-| 2 | Easy | 2 | 400 ms | 150 cp |
-| 3 | Steady | 3 | 700 ms | 60 cp |
-| 4 | Tricky | 4 | 1200 ms | 25 cp |
-| 5 | Toughest | 4 | 2000 ms | 0 cp |
+| Level | Name | Depth cap | Budget | Tolerance | Elo band |
+|---|---|---|---|---|---|
+| 1 | Beginner | 1 | 200 ms | 250 cp | 400–600 |
+| 2 | Easy | 2 | 400 ms | 150 cp | 600–900 |
+| 3 | Steady | 3 | 700 ms | 60 cp | 900–1200 |
+| 4 | Tricky | 4 | 1200 ms | 25 cp | 1200–1400 |
+| 5 | Toughest | 4 | 2000 ms | 0 cp | 1400–1600 |
+
+**The Elo bands are rough, uncalibrated estimates.** Nothing here has been played against
+rated opposition; they exist to help someone pick a level, not to make a claim, and the
+UI says so. They are also hardware-dependent, which is unusual: levels are budget-limited,
+so on slower hardware a level reaches a shallower depth and plays weaker than its band
+suggests. Run `bench.mjs` on the target device before trusting any of them.
 
 Tolerance 0 still allows choosing freely among *equal-best* moves. That is variety
 without weakness, and it stops the top level opening identically every game.

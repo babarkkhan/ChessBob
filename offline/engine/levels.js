@@ -17,7 +17,7 @@
 
 import { MATE_SCORE } from './evaluate.js';
 
-/** @typedef {{name: string, maxDepth: number, timeBudgetMs: number, tolerance: number}} Level */
+/** @typedef {{name: string, blurb: string, elo: string, maxDepth: number, timeBudgetMs: number, tolerance: number}} Level */
 
 /**
  * A level is a depth cap, a wall-clock budget, and a tolerance.
@@ -28,14 +28,27 @@ import { MATE_SCORE } from './evaluate.js';
  *
  * Budgets are kept short deliberately. An opponent that thinks for four seconds feels
  * broken to a child, and this engine is not meant to be strong.
+ *
+ * ## About the elo field
+ *
+ * These are ROUGH, UNCALIBRATED ESTIMATES for a simple alpha-beta engine with a
+ * material-plus-piece-square evaluation. Nobody has played this against rated
+ * opposition. They exist to help someone pick a level, not to make a claim.
+ *
+ * They are also hardware-dependent, which is unusual and worth understanding: the
+ * levels are budget-limited, so on slower hardware a level reaches a shallower depth
+ * and plays weaker than the band suggests. On a Raspberry Pi the top levels may not
+ * reach their nominal depth at all. Run bench.mjs on the target device before trusting
+ * any of these numbers, and if two levels collapse to the same depth, delete one
+ * rather than shipping two names for the same opponent.
  */
 /** @type {Record<number, Level>} */
 export const LEVELS = {
-  1: { name: 'Beginner', maxDepth: 1, timeBudgetMs: 200, tolerance: 250 },
-  2: { name: 'Easy', maxDepth: 2, timeBudgetMs: 400, tolerance: 150 },
-  3: { name: 'Steady', maxDepth: 3, timeBudgetMs: 700, tolerance: 60 },
-  4: { name: 'Tricky', maxDepth: 4, timeBudgetMs: 1200, tolerance: 25 },
-  5: { name: 'Toughest', maxDepth: 4, timeBudgetMs: 2000, tolerance: 0 },
+  1: { name: 'Beginner',  blurb: 'New to chess',  elo: '400-600',   maxDepth: 1, timeBudgetMs: 200,  tolerance: 250 },
+  2: { name: 'Easy',      blurb: 'Learning',      elo: '600-900',   maxDepth: 2, timeBudgetMs: 400,  tolerance: 150 },
+  3: { name: 'Steady',    blurb: 'Club beginner', elo: '900-1200',  maxDepth: 3, timeBudgetMs: 700,  tolerance: 60  },
+  4: { name: 'Tricky',    blurb: 'Improving',     elo: '1200-1400', maxDepth: 4, timeBudgetMs: 1200, tolerance: 25  },
+  5: { name: 'Toughest',  blurb: 'Strongest',     elo: '1400-1600', maxDepth: 4, timeBudgetMs: 2000, tolerance: 0   },
 };
 
 export const DEFAULT_LEVEL = 2;

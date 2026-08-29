@@ -6,52 +6,95 @@
 <title>ChessBob — Offline</title>
 <link rel="stylesheet" href="./style.css">
 </head>
-<body>
+<body data-layout="landscape" data-screen="setup">
 
 <div id="app">
-  <div id="board" role="grid" aria-label="Chess board"></div>
 
-  <div id="panel">
-    <div class="card">
-      <div id="status">White to play</div>
-      <div id="substatus"></div>
-    </div>
+  <!-- ============================ SETUP ============================ -->
+  <section id="setup">
+    <div class="setup-inner">
+      <h1>ChessBob</h1>
 
-    <div class="card">
-      <div class="label">Opponent</div>
-      <div class="row">
-        <button id="mode-engine" aria-pressed="true">Computer</button>
-        <button id="mode-two" aria-pressed="false">Two players</button>
-      </div>
-      <div id="level-row" style="margin-top:12px">
-        <div class="label">Difficulty</div>
-        <div class="levels">
-          <button data-level="1">1</button>
-          <button data-level="2">2</button>
-          <button data-level="3">3</button>
-          <button data-level="4">4</button>
-          <button data-level="5">5</button>
+      <div class="field">
+        <div class="label">Opponent</div>
+        <div class="row" id="opponent-row">
+          <button data-opponent="engine" aria-pressed="true">Computer</button>
+          <button data-opponent="two" aria-pressed="false">Two players</button>
         </div>
       </div>
-    </div>
 
-    <div class="card" style="flex:1 1 auto; display:flex; flex-direction:column; min-height:0">
-      <div class="label">Moves</div>
-      <div id="moves"></div>
-    </div>
+      <div class="field" id="field-level">
+        <div class="label">Difficulty</div>
+        <div class="levels" id="level-row"></div>
+        <p class="hint" id="level-hint"></p>
+      </div>
 
-    <div class="row">
-      <button id="undo">Take back</button>
-      <button id="new-game">New game</button>
-      <button id="fullscreen" aria-label="Toggle fullscreen" title="Fullscreen">⛶</button>
+      <div class="field" id="field-side">
+        <div class="label">Play as</div>
+        <div class="row" id="side-row">
+          <button data-side="w" aria-pressed="true">White</button>
+          <button data-side="b" aria-pressed="false">Black</button>
+          <button data-side="random" aria-pressed="false">Random</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label">Layout</div>
+        <div class="row" id="layout-row">
+          <button data-layout="landscape" aria-pressed="true">Landscape</button>
+          <button data-layout="portrait" aria-pressed="false">Portrait</button>
+        </div>
+        <p class="hint">Turn the screen to match. You can switch during a game.</p>
+      </div>
+
+      <button id="start" class="primary">Start game</button>
     </div>
-  </div>
+  </section>
+
+  <!-- ============================ GAME ============================= -->
+  <section id="game">
+    <div id="board" role="grid" aria-label="Chess board"></div>
+
+    <div id="panel">
+      <div id="status-bar">
+        <span id="turn-dot" aria-hidden="true"></span>
+        <span id="status">White to play</span>
+        <span id="substatus"></span>
+      </div>
+
+      <div id="moves-wrap">
+        <div id="moves"></div>
+      </div>
+
+      <div class="row">
+        <button id="undo">Take back</button>
+        <button id="rotate" aria-label="Switch layout" title="Switch layout">⟲</button>
+      </div>
+      <div class="row">
+        <button id="draw">Draw</button>
+        <button id="resign">Resign</button>
+        <button id="exit">Exit</button>
+      </div>
+    </div>
+  </section>
+
 </div>
 
-<div id="promo" data-open="false">
+<!-- ========================== OVERLAYS ============================= -->
+<div id="promo" class="overlay" data-open="false">
   <div class="card">
     <div class="label">Promote to</div>
     <div class="choices" id="promo-choices"></div>
+  </div>
+</div>
+
+<div id="confirm" class="overlay" data-open="false">
+  <div class="card">
+    <div id="confirm-text">Are you sure?</div>
+    <div class="row" style="margin-top:14px">
+      <button id="confirm-no">Cancel</button>
+      <button id="confirm-yes" class="primary">Confirm</button>
+    </div>
   </div>
 </div>
 

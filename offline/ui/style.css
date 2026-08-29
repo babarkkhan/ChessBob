@@ -1,10 +1,16 @@
 /*
- * Offline board, laid out for the device's 1024x600 panel.
+ * Offline board, for the device's 1024x600 panel.
  *
  * Constraints that drove this:
- *  - 1024x600 is short. The board gets the height, everything else fits beside it.
+ *  - The board is HEIGHT-constrained in landscape and WIDTH-constrained in portrait,
+ *    and the short edge is 600px either way. So 600px is the hard ceiling on board
+ *    size, and every pixel of padding on the short axis costs board directly.
  *  - Touch only. No hover state carries meaning; every control is >= 48px.
  *  - No platform's colours. This palette is ours -- see the README's trademark notice.
+ *
+ * Portrait works by rotating the whole app 90 degrees within the same 1024x600
+ * viewport, so the user physically turns the screen. That needs no compositor change,
+ * no root, and can be toggled mid-game -- which a wlr-randr display rotation could not.
  */
 
 :root {
@@ -15,6 +21,7 @@
   --ink-dim: #9aa2b1;
   --accent: #6ea8fe;
   --accent-ink: #0b1220;
+  --danger: #e0685c;
 
   --light-square: #d8cfc0;
   --dark-square: #7d8796;
@@ -26,12 +33,7 @@
   --piece-black: #23262b;
   --piece-edge: #14161a;
 
-  /* The board is height-constrained on a 1024x600 panel, so every pixel of vertical
-     padding costs board size directly. Measured on the real display: 20px padding gave
-     70px squares, which read as slightly too small under a finger. 8px gives ~73px.
-     The width term reserves room for the panel and only binds on wider screens. */
-  --board-pad: 8px;
-  --board-size: min(calc(100vh - (var(--board-pad) * 2)), calc(100vw - 352px));
+  --pad: 8px;
   --radius: 12px;
 }
 
@@ -50,16 +52,75 @@ html, body {
   touch-action: manipulation;     /* no double-tap zoom stealing taps */
 }
 
-#app {
+/* ---------- app shell and the portrait rotation ---------- */
+
+#app { width: 100%; height: 100%; }
+
+/* Rotate the entire UI a quarter turn. The logical canvas becomes 600x1024 and the
+   browser maps touch through the transform for us, so hit-testing stays correct. */
+body[data-layout="portrait"] #app {
+  width: 100vh;
+  height: 100vw;
+  transform: rotate(90deg) translateY(-100%);
+  transform-origin: top left;
+}
+
+#setup, #game { display: none; height: 100%; }
+body[data-screen="setup"] #setup { display: flex; }
+body[data-screen="game"]  #game  { display: flex; }
+
+/* ---------- setup screen ---------- */
+
+#setup {
+  align-items: center;
+  justify-content: center;
+  padding: var(--pad);
+}
+
+.setup-inner {
+  width: min(560px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.setup-inner h1 {
+  margin: 0 0 2px;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+}
+
+.field { display: flex; flex-direction: column; }
+
+.hint {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--ink-dim);
+  min-height: 18px;
+}
+
+/* ---------- game screen ---------- */
+
+#game {
   gap: 12px;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  padding: var(--board-pad);
+  padding: var(--pad);
 }
 
-/* ---------- board ---------- */
+body[data-layout="landscape"] #game { flex-direction: row; }
+body[data-layout="portrait"]  #game { flex-direction: column; }
+
+/* Landscape: height-bound. Portrait: width-bound. Both land on the same number,
+   because the panel's short edge is 600px either way. */
+body[data-layout="landscape"] #board {
+  --board-size: min(calc(100vh - var(--pad) * 2), calc(100vw - 352px));
+}
+body[data-layout="portrait"] #board {
+  --board-size: min(calc(100vh - var(--pad) * 2), calc(100vw - 300px));
+}
 
 #board {
   width: var(--board-size);
@@ -91,16 +152,10 @@ html, body {
   pointer-events: none;
 }
 
-.sq--selected {
-  box-shadow: inset 0 0 0 4px var(--selected);
-}
+.sq--selected { box-shadow: inset 0 0 0 4px var(--selected); }
+.sq--check { background: radial-gradient(circle, var(--check) 0%, transparent 72%); }
 
-.sq--check {
-  background: radial-gradient(circle, var(--check) 0%, transparent 72%);
-}
-
-/* Legal destination markers. A dot for a quiet move, a ring for a capture, which is
-   the convention players already know and needs no explaining. */
+/* Dot for a quiet move, ring for a capture -- the convention players already know. */
 .sq--move::before,
 .sq--capture::before {
   content: "";
@@ -148,55 +203,77 @@ html, body {
 .piece--b .cut,
 .piece--b .cross { fill: var(--piece-white); }
 
-/* ---------- side panel ---------- */
+/* ---------- in-game panel ---------- */
 
 #panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+body[data-layout="landscape"] #panel {
   flex: 1 1 auto;
   max-width: 420px;
   min-width: 280px;
-  height: var(--board-size);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  height: var(--board-size, 100%);
+}
+body[data-layout="portrait"] #panel {
+  width: min(584px, 100%);
+  flex: 1 1 auto;
 }
 
-.card {
+/* Compact by design: once a game is running the setup controls are gone, and what
+   is left is whose turn it is, the notation, and the ways out. */
+#status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: var(--panel);
   border: 1px solid var(--panel-edge);
   border-radius: var(--radius);
-  padding: 14px;
+  padding: 10px 14px;
+  flex: 0 0 auto;
 }
+#turn-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--panel-edge);
+  background: var(--piece-white);
+  flex: 0 0 auto;
+}
+body[data-turn="b"] #turn-dot { background: var(--piece-black); }
+#status { font-size: 17px; font-weight: 650; }
+#substatus { color: var(--ink-dim); font-size: 14px; margin-left: auto; }
+#substatus.alert { color: var(--check); font-weight: 650; }
 
-#status {
-  font-size: 22px;
-  font-weight: 650;
-  min-height: 30px;
+#moves-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  overflow: hidden;
 }
-#substatus {
-  color: var(--ink-dim);
+#moves {
+  height: 100%;
+  overflow-y: auto;
+  font-variant-numeric: tabular-nums;
   font-size: 15px;
-  min-height: 21px;
-  margin-top: 4px;
+  line-height: 1.75;
+  color: var(--ink);
 }
+#moves .num { color: var(--ink-dim); }
 
-.label {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--ink-dim);
-  margin-bottom: 8px;
-}
+/* ---------- controls ---------- */
 
 .row { display: flex; gap: 8px; }
 .row > * { flex: 1; }
 
-/* Narrow, icon-only. The appliance will run Chromium in kiosk mode where this is
-   redundant, but it costs nothing and makes the board usable in a normal window. */
-#fullscreen { flex: 0 0 60px; font-size: 20px; padding: 0; }
-
 button {
-  min-height: 52px;                /* touch target floor */
-  padding: 10px 14px;
+  min-height: 52px;
+  padding: 10px 12px;
   font: inherit;
   font-weight: 600;
   color: var(--ink);
@@ -212,35 +289,69 @@ button[aria-pressed="true"] {
   border-color: var(--accent);
 }
 button:disabled { opacity: 0.4; cursor: default; }
+button.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  min-height: 58px;
+  font-size: 18px;
+}
+#resign { color: var(--danger); }
+#rotate { flex: 0 0 60px; font-size: 20px; padding: 0; }
 
 .levels { display: flex; gap: 6px; }
-.levels button { flex: 1 1 0; min-width: 0; padding: 10px 0; }
-
-#moves {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  font-variant-numeric: tabular-nums;
-  font-size: 15px;
-  line-height: 1.7;
-  color: var(--ink-dim);
+.levels button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8px 2px;
+  min-height: 62px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  line-height: 1.15;
 }
-#moves b { color: var(--ink); font-weight: 600; }
+.levels .lvl-n { font-size: 18px; }
+.levels .lvl-elo { font-size: 10px; opacity: 0.75; font-weight: 500; }
 
-/* ---------- promotion overlay ---------- */
+/* ---------- overlays ---------- */
 
-#promo {
+.overlay {
   position: fixed;
   inset: 0;
   display: none;
   align-items: center;
   justify-content: center;
   background: rgba(10, 12, 15, 0.72);
+  z-index: 10;
 }
-#promo[data-open="true"] { display: flex; }
-#promo .card { text-align: center; }
+.overlay[data-open="true"] { display: flex; }
+
+/* Overlays are fixed to the viewport, so they must be rotated too or they appear
+   sideways relative to a portrait board. */
+body[data-layout="portrait"] .overlay > .card { transform: rotate(90deg); }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  padding: 18px;
+  text-align: center;
+  max-width: 460px;
+}
 #promo .choices { display: flex; gap: 10px; margin-top: 10px; }
 #promo button { width: 92px; height: 92px; display: grid; place-items: center; }
 #promo .piece { width: 62px; height: 62px; }
+#confirm-text { font-size: 18px; font-weight: 600; }
+
+.label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+}
 
 @media (prefers-reduced-motion: reduce) {
   button:active { transform: none; }
