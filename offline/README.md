@@ -8,10 +8,24 @@ and the fair-play collision) and [ADR 0009](../docs/adr/0009-offline-engine-desi
 
 ```bash
 npm --prefix offline install    # dev only -- the device needs no npm
-npm --prefix offline test       # 19 tests
+npm --prefix offline test       # 19 tests (needs Node 22+; the device never runs these)
 node offline/serve.mjs          # then open http://127.0.0.1:8137/offline/
 node offline/bench.mjs          # response times -- run this on the Pi
 ```
+
+**On the Pi, use the launcher rather than starting things by hand:**
+
+```bash
+bash scripts/dev-board.sh          # fullscreen; F11 or Alt+F4 gets you out
+bash scripts/dev-board.sh --kiosk  # true kiosk: no way out except SSH
+bash scripts/dev-board.sh --stop   # kill the server and the browser
+```
+
+It tears down before it brings up. Relaunching by hand leaves the previous server
+holding port 8137 (`EADDRINUSE`) and the previous Chromium holding the screen with no
+way out on the panel — both of which happened on the first attempt. It defaults to
+`--start-fullscreen` rather than `--kiosk`, because kiosk having no exit is right for
+the finished appliance and wrong for a development loop.
 
 ## Two screens
 
