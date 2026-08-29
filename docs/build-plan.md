@@ -14,7 +14,9 @@ procedures live in [`test-plan.md`](test-plan.md).
 | | Status |
 |---|---|
 | Repo, ADRs, fair-play CI | ✅ done |
-| Display board identified, power topology settled | ✅ done — [ADR 0006](adr/0006-power-topology-pi5.md) |
+| Display board identified | ✅ done — [findings](../hardware/display-A1-7inch-V13.md) |
+| Power topology | ⚠️ measured, primary REJECTED — needs a powered hub |
+| Pi boots, panel + touch working | ✅ 1024×600 native, ILITEK touch detected, fan 2382 RPM |
 | Offline engine + tests | ✅ done — 19 tests, [`offline/`](../offline/README.md) |
 | Offline board UI | ✅ done — playable in a browser, verified end to end |
 | Parts ordered | ⬜ blocked on you |
@@ -30,9 +32,11 @@ is being written first, deliberately, because the parts have not arrived.
 
 Full procedure in [`getting-started.md`](getting-started.md). Two blocking gates:
 
-**A1. Power measurement.** The display's single USB-C carries power *and* touch, so the
-whole display load sits on the Pi's USB-A budget with no way to offload it. Measure
-peak draw at full brightness with speakers driven. Closes
+**A1. Power measurement — ✅ done 2026-08-29, and it failed.** The panel draws 1.3 A at
+50% brightness and restarts the Pi at 95%, consuming the whole 1.6 A USB-A budget. A
+non-back-feeding powered USB hub is now a tier-1 part, not a contingency. Bench rig is
+usable at ≤50% brightness until one arrives; **do not run the soak until then**, since
+a soak at half brightness proves nothing about the shipping configuration.
 [ADR 0006](adr/0006-power-topology-pi5.md).
 
 **A2. On-screen keyboard.** Squeekboard renders below fullscreen Chromium on labwc. Five

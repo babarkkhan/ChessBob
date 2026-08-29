@@ -14,14 +14,15 @@ Do this before ordering anything else. Marketplace listings for this display
 contradict the manufacturer's own wiki, and the seller screenshot for the Pi claimed
 `ARMv7`, `DDR4`, and `4 GB storage` — all three are wrong for a Pi 5.
 
-| Item | Expected | Observed |
+| Item | Expected | Observed 2026-08-29 |
 |---|---|---|
-| Pi model / revision (`cat /proc/cpuinfo`, `cat /proc/device-tree/model`) | Raspberry Pi 5 Model B Rev 1.x, BCM2712 | |
-| RAM (`free -h`) | 4 GB LPDDR4X | |
-| Display SKU (printed on the unit) | EP-0177 | |
-| Display port arrangement | **Does one USB-C carry both touch and power?** | |
-| Supplied HDMI cable type | Full-size HDMI + micro-HDMI adapter | |
-| Supplied USB cable — data or charge-only? | Must be data | |
+| Pi model / revision | Raspberry Pi 5 Model B Rev 1.x | ✅ **Rev 1.0**, BCM2712 |
+| RAM | 4 GB LPDDR4X | ✅ 3.9 GiB usable |
+| OS | current 64-bit Pi OS | ✅ Debian 13 (trixie), kernel 6.18.34+rpt-rpi-2712 aarch64 |
+| Display board marking | EP-0177 | ⚠️ **`A1-7inch-V13`** — no EP-0177 marking; generic OEM board, RTD2660H scaler |
+| Display port arrangement | does one USB-C carry both? | ⚠️ **Yes** — single USB-C `DC5V POWER & TOUCH` |
+| Supplied USB cable — data or charge-only? | must be data | ✅ data — touch enumerates |
+| Boot media | high-endurance A2 microSD | ✅ `/dev/mmcblk0p2`, 117 G, 5% used |
 
 📷 Attach photographs of the display label and the Pi board to this directory.
 
@@ -32,28 +33,45 @@ contradict the manufacturer's own wiki, and the seller screenshot for the Pi cla
 Read [ADR 0006](adr/0006-power-topology-pi5.md) first. **The vendor wiki's
 instruction is wrong for a Pi 5 — do not power the Pi from the screen.**
 
-### Topology under test
+### Topology tested — REJECTED
 
 ```
 [Official 27 W 5V/5A USB-C PSU] ──> [Pi 5 USB-C]
-[EP-0177 touch + power]         ──> [Pi 5 USB-A]
-[EP-0177 HDMI]                  <── [Pi 5 micro-HDMI 0]
+[Display touch + power]         ──> [Pi 5 USB-A]      <-- exceeds the 1.6 A budget
+[Display HDMI]                  <── [Pi 5 micro-HDMI 0]
+```
+
+### Required topology
+
+```
+[27 W PSU]   ──> [Pi 5 USB-C]
+[Pi 5 USB-A] <──data──> [powered USB hub] <──data+power──> [Display USB-C]
+                             ^
+                       [hub's own 5 V / 3 A+ PSU]
 ```
 
 ### Measurements
 
 Requires an inline USB power meter. Phase 0 cannot be closed without one.
 
-| Condition | Expected | Measured V | Measured A |
-|---|---|---|---|
-| Display idle, backlight minimum | | | |
-| Display idle, backlight 100% | | | |
-| Backlight 100% + both speakers at full volume | vendor claims 0.5 A "standby" — expect more | | |
-| Above + Chromium rendering a board | | | |
+**Measured 2026-08-29 — the primary topology FAILED.**
 
-**Decision point:** if peak exceeds ~1.2 A, switch to the fallback topology in ADR 0006
-(separate 5 V/3 A supply for the display) — which is only possible if 0.1 confirmed
-that touch data is available without power on that same port.
+| Condition | Bus voltage | Current | Outcome |
+|---|---|---|---|
+| Pi idle (PMIC `EXT5V_V`) | 5.06 V | — | stable |
+| Backlight 50% | 4.9 V | **1.3 A** | holding |
+| Backlight 75% | 4.8 V | **1.4–1.6 A** | holding, visible droop |
+| Backlight 95% | — | — | **system restart** |
+
+The Pi 5's total USB-A budget is 1.6 A. The display alone consumes it by 75%
+brightness and collapses the rail at 95%. The vendor's "0.5 A max" is a standby figure
+and understates real draw by roughly 3×.
+
+**A non-back-feeding powered USB hub is now required** — see
+[ADR 0006](adr/0006-power-topology-pi5.md). Re-measure all four points once fitted.
+
+**Do not run the soak until the hub is fitted.** A soak at 50% brightness proves
+nothing about the shipping configuration.
 
 ### Soak
 
@@ -65,7 +83,8 @@ while true; do date; vcgencmd measure_temp; vcgencmd get_throttled; sleep 30; do
 
 | Check | Pass condition | Result |
 |---|---|---|
-| `vcgencmd get_throttled` | `0x0` throughout | |
+| `vcgencmd get_throttled` | `0x0` throughout | ✅ at idle; ⬜ under soak |
+| Active Cooler running | fan spins under load | ✅ 2382 RPM at 49.9 °C, `pwm-fan` state 1/4 |
 | Peak SoC temperature | no thermal throttle flag | |
 | `dmesg` USB resets | none | |
 | `dmesg` undervoltage | none | |
@@ -79,7 +98,7 @@ while true; do date; vcgencmd measure_temp; vcgencmd get_throttled; sleep 30; do
 
 ### The known problem
 
-Raspberry Pi OS 6.2 defaults to **labwc on Wayland**. Squeekboard is hardcoded to the
+Raspberry Pi OS (Debian 13 trixie, confirmed on this device) defaults to **labwc on Wayland**. Squeekboard is hardcoded to the
 `top` layer; fullscreen and `--kiosk` Chromium sit above it, so **the keyboard never
 becomes visible.** Reported upstream at
 [labwc#2926](https://github.com/labwc/labwc/issues/2926) and on the
@@ -122,10 +141,11 @@ both worse products but they are products. Discovering this in Phase 1 costs a w
 
 | Check | Pass condition | Result |
 |---|---|---|
-| Resolution | native 1024×600, no scaling | |
-| Refresh | 60 Hz | |
-| Multitouch | 2+ points register | |
-| Touch mapping | correct after reboot | |
+| Resolution | native 1024×600, no scaling | ✅ preferred mode reported as 1024x600 on `card1-HDMI-A-1` |
+| Refresh | 60 Hz | ⬜ confirm in a desktop session |
+| Touch detected | USB HID enumerates | ✅ `ILITEK-TOUCH`, USB `222a:0001 ILI Technology Multi-Touch Screen` |
+| Multitouch | 2+ points register | ⬜ |
+| Touch mapping | correct after reboot | ⬜ |
 | Touch mapping after rotation | correct, or rotation ruled out | |
 | Audio out | plays; mute state visible | |
 | Audio on boot | does **not** start unexpectedly | |

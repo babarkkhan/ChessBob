@@ -36,6 +36,7 @@ items.
 | **Raspberry Pi 5 Active Cooler** | Chromium is a sustained load; the Pi 5 throttles without it. Cheapest item here and non-optional | |
 | **SD card reader** | To write the card from your PC — built-in or USB adapter. Only if you don't have one | |
 | **USB keyboard + mouse** | Bring-up and recovery only. Not part of the product | |
+| **Powered USB hub, non-back-feeding, 5 V/3 A+** | **Required, measured 2026-08-29.** The panel draws 1.3 A at 50% brightness and restarts the Pi at 95% — it consumes the Pi's entire 1.6 A USB-A budget. Must not back-feed the Pi. USB 2.0 is fine; touch is low-bandwidth HID. See [ADR 0006](../../docs/adr/0006-power-topology-pi5.md) | |
 
 ---
 
@@ -61,7 +62,6 @@ Don't buy these yet. Each has a specific trigger.
 
 | Part | Trigger |
 |---|---|
-| **Powered USB hub** (non-back-feeding) | Only if Step 7 measures peak display draw above the Pi's USB-A budget. **A second 5 V PSU is NOT an option** — the display has one USB-C carrying power and touch together, so the hub carries the current and passes touch through. See [ADR 0006](../../docs/adr/0006-power-topology-pi5.md) |
 | **Right-angle micro-HDMI adapter** | Enclosure work. Reduces depth and connector strain versus the boxed adapter-plus-cable, which is bulky and a strain risk once packaged |
 | **Momentary tactile button + leads** | Phase 1, for GPIO Home (short press) / safe shutdown (long press) |
 | **NVMe HAT + drive** | **Held in reserve.** Only if Phase 3 boot-time or microSD-reliability measurements demand it. Adds cost, heat, mechanical complexity, another board and another cable |
@@ -76,10 +76,9 @@ pull off. Even a rough printed or laser-cut back panel should exist before the d
 is in front of a child. The four corner brass standoffs give clean M3 mounting points
 to build against.
 
-For the **full** enclosure, wait until
-[ADR 0006](../../docs/adr/0006-power-topology-pi5.md) is closed. The forced topology
-needs only one external power entry, which simplifies things — but the powered-hub
-fallback would add a second, which changes the design.
+For the **full** enclosure: the powered hub is now confirmed necessary, so the design
+needs **two power entries** (or one supply feeding two protected rails internally) plus
+somewhere to mount the hub. See [ADR 0006](../../docs/adr/0006-power-topology-pi5.md).
 
 Requirements, with the kid/family context in mind
 ([ADR 0004](../../docs/adr/0004-multi-profile-family-device.md)):
